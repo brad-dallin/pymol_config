@@ -1,0 +1,15 @@
+#!/usr/bin/env pymol
+# -*- coding: utf-8 -*-
+reinitialize
+
+# CUSTOM PYMOL PATH
+PATH_PYMOL="/Users/bdallin/Projects/repos/pymol_config"
+
+# ADD CUSTOM PALETTES
+cmd.run(f"{PATH_PYMOL}/custom_palettes.py")
+
+# ADD CUSTOM FUNCTIONS
+# cmd.run(f"{PATH_PYMOL}/pymol_functions.py")
+
+# ADD CUSTOM STYLES
+cmd.run(f"{PATH_PYMOL}/pymol_style.py")
