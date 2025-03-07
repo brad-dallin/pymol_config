@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 reinitialize
 
+# ADD PSICO EXTENSION
+import psico.fullinit
+import psico.morphing
+
 # CUSTOM PYMOL PATH
 PATH_PYMOL="/Users/bdallin/Projects/repos/pymol_config"
 
