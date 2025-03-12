@@ -90,7 +90,7 @@ def pretty_binding_site():
 #     cmd.set("reflect", 0.1)
 #     cmd.space("cmyk")
 
-def af2_plddt_colors(arg1: str):
+def plddt_colors(arg1: str):
     """
     Color atoms by AF2 pLDDT score.
     """
