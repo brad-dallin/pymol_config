@@ -90,6 +90,26 @@ def pretty_binding_site():
 #     cmd.set("reflect", 0.1)
 #     cmd.space("cmyk")
 
+def af2_plddt_colors(arg1: str):
+    """
+    Color atoms by AF2 pLDDT score.
+    """
+    cmd.set_color("plddt_very_high", [33, 81, 204])
+    cmd.set_color("plddt_high", [127, 201, 239])
+    cmd.set_color("plddt_low", [249, 220, 77])
+    cmd.set_color("plddt_very_low", [238, 132, 83])
+    myspace = {'atom_index': []}
+    cmd.iterate(arg1, 'atom_index.append((index, b))', space=myspace)
+    for ii, bb in myspace['atom_index']:
+        if bb > 90.:
+            cmd.color("plddt_very_high", f"index {ii}")
+        elif bb > 70.:
+            cmd.color("plddt_high", f"index {ii}")
+        elif bb > 50.:
+            cmd.color("plddt_low", f"index {ii}")
+        else:
+            cmd.color("plddt_very_low", f"index {ii}")
+
 
 # Extend PyMOL commands
 cmd.extend("pretty_binding_site", pretty_binding_site)
@@ -97,3 +117,4 @@ cmd.extend("pretty_binding_site", pretty_binding_site)
 cmd.extend("ball_n_stick", ball_n_stick)
 cmd.extend("ball_n_stick_thick", ball_n_stick_thick)
 cmd.extend("add_vdw", add_vdw)
+cmd.extend("af2_plddt_colors", af2_plddt_colors)

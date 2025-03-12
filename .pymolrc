@@ -13,7 +13,7 @@ PATH_PYMOL="/Users/bdallin/Projects/repos/pymol_config"
 cmd.run(f"{PATH_PYMOL}/custom_palettes.py")
 
 # ADD CUSTOM FUNCTIONS
-# cmd.run(f"{PATH_PYMOL}/pymol_functions.py")
+cmd.run(f"{PATH_PYMOL}/pymol_functions.py")
 
 # ADD CUSTOM STYLES
 cmd.run(f"{PATH_PYMOL}/pymol_style.py")
