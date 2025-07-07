@@ -36,7 +36,7 @@ def pymol_custom_style():
     """Apply custom style settings to PyMOL."""
     # Set default view
     cmd.space("cmyk")
-    # cmd.bg_color("white")
+    cmd.bg_color("white")
     # cmd.viewport(800, 800)
     cmd.set("depth_cue", 0)
     cmd.set("orthoscopic", 0)
@@ -119,14 +119,3 @@ def pymol_custom_style():
 
 # Extend PyMOL commands
 cmd.extend("pymol_custom_style", pymol_custom_style)
-
-"""
-set cartoon_oval_length, 1
-set cartoon_oval_width, 0.1
-set stick_radius, 0.16
-set stick_ball, on
-set stick_ball_ratio, 1.1
-set dash_gap, 0.50000
-set dash_radius, 0.20000
-set dash_width, 4
-"""
