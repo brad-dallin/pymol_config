@@ -5,73 +5,200 @@
 ## IMPORT LIBRARIES
 from pymol import cmd
 from pymol import util
+from pymol import preset
+from typing import Optional
 
 
-# Defines BallnStick settings
-def ball_n_stick(arg1):
-    cmd.show("sticks", arg1)
-    cmd.show("spheres", arg1)
-    cmd.color("atomic", f"(not elem C) and {arg1}")
-    cmd.color("gray95", f"elem C and {arg1}")
-    cmd.color("grey98", f"elem H and {arg1}")
-    cmd.set("stick_radius", 0.07, arg1)
-    cmd.set("sphere_scale", 0.18, arg1)
-    cmd.set("sphere_scale", 0.13, f"{arg1} and elem H")
-    cmd.set("dash_gap", 0.01, arg1)
-    cmd.set("dash_radius", 0.07, arg1)
-    cmd.set("stick_color", "black", arg1)
-    cmd.set("dash_gap", 0.01)
-    cmd.set("dash_radius", 0.035)
-    cmd.hide("nonbonded", arg1)
-    cmd.hide("lines", arg1)
-    cmd.zoom(arg1)
-    cmd.hide("labels")
-
-
-def ball_n_stick_thick(arg1, color):
-    cmd.show("licorice", arg1)
-    cmd.show("spheres", arg1)
-    cmd.unset("stick_color", arg1)
-    util.cnc(arg1)
-    cmd.color("atomic", f"(not elem C) and {arg1}")
-    cmd.color(color, f"elem C and {arg1}")
-    cmd.color("gray98", f"elem H and {arg1}")
-    cmd.set("stick_radius", 0.17, arg1)
-    cmd.set("sphere_scale", 0.18, arg1)
-    cmd.set("dash_radius", 0.07, arg1)
-    cmd.set("dash_gap", 0.05)
-    cmd.set("dash_radius", 0.035)
-    cmd.hide("nonbonded", arg1)
-    cmd.hide("everything", f"{arg1} and elem H")
-    cmd.zoom(arg1)
-
-
-# Defines VDW Sphere settings
-def add_vdw(arg1):
-    vdw_object = f"{arg1}_vdw"
-    cmd.copy(vdw_object, arg1)
-    cmd.set("sphere_scale", 1.0, f"{vdw_object} and elem H")
-    cmd.rebuild()
-    cmd.set("sphere_scale", 1, vdw_object)
-    cmd.hide("nonbonded", vdw_object)
-    cmd.hide("lines", vdw_object)
-    cmd.hide("sticks", vdw_object)
-    cmd.set("sphere_transparency", 0.7, vdw_object)
-
-
-# Defines protein settings for binding site
-def pretty_binding_site():
+## Functions
+def _apply_element_colors(selection: str) -> None:
     """
+    Apply standard CPK-like coloring scheme to molecular elements.
+    
+    Parameters:
+    -----------
+    selection : str
+        PyMOL selection string
+    """
+    color_scheme = {
+        "C": "gray85",    # Carbon - light gray
+        "O": "red",       # Oxygen - red  
+        "N": "slate",     # Nitrogen - blue-gray
+        "H": "gray98",    # Hydrogen - near white
+        "S": "yellow",    # Sulfur - yellow
+        "P": "orange",    # Phosphorus - orange
+    }
+    for element, color in color_scheme.items():
+        element_selection = f"{selection} and elem {element}"
+        if cmd.count_atoms(element_selection):
+            cmd.color(color, element_selection)
+
+
+def _setup_plddt_colors(custom_colors: Optional[dict] = None) -> None:
+    """
+    Set up pLDDT color definitions in PyMOL.
+    
+    Parameters:
+    -----------
+    custom_colors : dict, optional
+        Custom color definitions as RGB tuples (0-255 range)
+    """
+    # Default AlphaFold2 pLDDT colors (RGB 0-255 range)
+    default_colors = {
+        'very_high': (33, 81, 204),   # Dark blue - very confident
+        'high': (127, 201, 239),      # Light blue - confident  
+        'low': (249, 220, 77),        # Yellow - low confidence
+        'very_low': (238, 132, 83)    # Orange - very low confidence
+    }
+    
+    # Use custom colors if provided, otherwise use defaults
+    colors = custom_colors if custom_colors else default_colors
+    
+    # Set PyMOL colors (convert from 0-255 to 0-1 range)
+    for confidence_level, rgb in colors.items():
+        color_name = f"plddt_{confidence_level}"
+        rgb_normalized = [c / 255.0 for c in rgb]
+        cmd.set_color(color_name, rgb_normalized)
+
+
+def _get_plddt_color_name(
+        b_factor: float,
+        very_high_threshold: float,
+        high_threshold: float,
+        low_threshold: float) -> str:
+    """
+    Determine the appropriate pLDDT color name based on B-factor value.
+    
+    Parameters:
+    -----------
+    b_factor : float
+        B-factor value (pLDDT score)
+    very_high_threshold : float
+        Threshold for very high confidence
+    high_threshold : float
+        Threshold for high confidence
+    low_threshold : float
+        Threshold for low confidence
+    
+    Returns:
+    --------
+    str
+        PyMOL color name corresponding to the confidence level
+    """
+    if b_factor > very_high_threshold:
+        return "plddt_very_high"
+    elif b_factor > high_threshold:
+        return "plddt_high"
+    elif b_factor > low_threshold:
+        return "plddt_low"
+    else:
+        return "plddt_very_low"
+
+
+def stylize_ball_and_stick(selection: str,
+                          stick_radius: float = 0.07,
+                          sphere_scale: float = 0.18,
+                          hydrogen_scale: float = 0.13,
+                          stick_quality: int = 50,
+                          sphere_quality: int = 4,
+                          set_background: bool = True,
+                          use_preset: bool = True) -> None:
+    """
+    Apply a customized ball and stick representation to a PyMOL selection.
+    
+    This function creates a ball and stick representation with custom sizing,
+    coloring, and quality settings for molecular visualization. Can optionally
+    use PyMOL's built-in preset as a base (maintaining original behavior).
+    
+    Parameters:
+    -----------
+    selection : str
+        PyMOL selection string (e.g., molecule name, residue selection)
+    stick_radius : float, optional
+        Radius of stick bonds (default: 0.07)
+    sphere_scale : float, optional
+        Scale factor for atom spheres (default: 0.18)
+    hydrogen_scale : float, optional
+        Scale factor specifically for hydrogen atoms (default: 0.13)
+    stick_quality : int, optional
+        Quality/smoothness of stick rendering (default: 50)
+    sphere_quality : int, optional
+        Quality/smoothness of sphere rendering (default: 4)
+    set_background : bool, optional
+        Whether to set background to white (default: True)
+    use_preset : bool, optional
+        Whether to apply PyMOL's ball_and_stick preset at the end (default: True)
+        This maintains the original function's behavior
+    
+    Returns:
+    --------
+    None
+    
     Example:
-        PyMOL> pretty_binding_site
+    --------
+    >>> stylize_ball_and_stick("protein")
+    >>> stylize_ball_and_stick("resn ALA", stick_radius=0.1, sphere_scale=0.2)
+    >>> stylize_ball_and_stick("ligand", use_preset=False)  # Skip preset application
     """
-    cmd.show("sticks", "byres all within 3 of sele")
-    cmd.color("pastel_pink", "elem C and not sele")
-    cmd.hide("everything", "(hydro and (elem H and not (neighbor elem N+O)))")
-    cmd.show("sticks", "sele")
-    cmd.color("pastel_brown", "elem C and sele")
-    cmd.set("cartoon_color", "grey98")
-    cmd.hide("sticks", "backbone and (not name CA)")
+    
+    # Validate selection exists
+    if not cmd.count_atoms(selection):
+        raise ValueError(f"No atoms found in selection: '{selection}'")
+    
+    # Clear existing representations
+    cmd.hide("everything", selection)
+    
+    # Apply ball and stick representation
+    cmd.show("sticks", selection)
+    cmd.show("spheres", selection)
+    
+    # Set geometric properties
+    cmd.set("stick_radius", stick_radius, selection)
+    cmd.set("sphere_scale", sphere_scale, selection)
+    cmd.set("sphere_scale", hydrogen_scale, f"{selection} and elem H")
+    
+    # Set rendering quality
+    cmd.set("stick_quality", stick_quality, selection)
+    cmd.set("sphere_quality", sphere_quality, selection)
+    
+    # Apply element-based coloring scheme
+    _apply_element_colors(selection)
+    
+    # Set stick color and background
+    cmd.set("stick_color", "black")
+    if set_background:
+        cmd.set("bg_rgb", [1, 1, 1])  # White background
+    
+    # Apply preset at the end (maintaining original function behavior)
+    if use_preset:
+        preset.ball_and_stick(selection)
+
+
+# # Defines VDW Sphere settings
+# def add_vdw(arg1):
+#     vdw_object = f"{arg1}_vdw"
+#     cmd.copy(vdw_object, arg1)
+#     cmd.set("sphere_scale", 1.0, f"{vdw_object} and elem H")
+#     cmd.rebuild()
+#     cmd.set("sphere_scale", 1, vdw_object)
+#     cmd.hide("nonbonded", vdw_object)
+#     cmd.hide("lines", vdw_object)
+#     cmd.hide("sticks", vdw_object)
+#     cmd.set("sphere_transparency", 0.7, vdw_object)
+
+
+# # Defines protein settings for binding site
+# def pretty_binding_site():
+#     """
+#     Example:
+#         PyMOL> pretty_binding_site
+#     """
+#     cmd.show("sticks", "byres all within 3 of sele")
+#     cmd.color("pastel_pink", "elem C and not sele")
+#     cmd.hide("everything", "(hydro and (elem H and not (neighbor elem N+O)))")
+#     cmd.show("sticks", "sele")
+#     cmd.color("pastel_brown", "elem C and sele")
+#     cmd.set("cartoon_color", "grey98")
+#     cmd.hide("sticks", "backbone and (not name CA)")
 
 
 # def set_pretty():
@@ -90,31 +217,77 @@ def pretty_binding_site():
 #     cmd.set("reflect", 0.1)
 #     cmd.space("cmyk")
 
-def plddt_colors(arg1: str):
+def color_by_plddt(
+        selection: str,
+        very_high_threshold: float = 90.0,
+        high_threshold: float = 70.0,
+        low_threshold: float = 50.0,
+        custom_colors: Optional[dict] = None) -> None:
     """
-    Color atoms by AF2 pLDDT score.
+    Color atoms by AlphaFold pLDDT (predicted Local Distance Difference Test) score.
+    
+    This function colors atoms based on their B-factor values, which in AlphaFold
+    structures represent pLDDT confidence scores. Higher scores indicate higher
+    confidence in the predicted structure.
+    
+    Parameters:
+    -----------
+    selection : str
+        PyMOL selection string (e.g., molecule name, residue selection)
+    very_high_threshold : float, optional
+        Threshold for very high confidence coloring (default: 90.0)
+    high_threshold : float, optional
+        Threshold for high confidence coloring (default: 70.0)
+    low_threshold : float, optional
+        Threshold for low confidence coloring (default: 50.0)
+    custom_colors : dict, optional
+        Custom color definitions as RGB tuples (0-255 range)
+        Keys: 'very_high', 'high', 'low', 'very_low'
+    
+    Returns:
+    --------
+    None
+    
+    Example:
+    --------
+    >>> color_by_plddt("alphafold_protein")
+    >>> color_by_plddt("chain A", very_high_threshold=95.0, high_threshold=80.0)
+    >>> custom_colors = {'very_high': (0, 255, 0), 'high': (255, 255, 0)}
+    >>> color_by_plddt("protein", custom_colors=custom_colors)
     """
-    cmd.set_color("plddt_very_high", [33, 81, 204])
-    cmd.set_color("plddt_high", [127, 201, 239])
-    cmd.set_color("plddt_low", [249, 220, 77])
-    cmd.set_color("plddt_very_low", [238, 132, 83])
-    myspace = {'atom_index': []}
-    cmd.iterate(arg1, 'atom_index.append((index, b))', space=myspace)
-    for ii, bb in myspace['atom_index']:
-        if bb > 90.:
-            cmd.color("plddt_very_high", f"index {ii}")
-        elif bb > 70.:
-            cmd.color("plddt_high", f"index {ii}")
-        elif bb > 50.:
-            cmd.color("plddt_low", f"index {ii}")
-        else:
-            cmd.color("plddt_very_low", f"index {ii}")
+    
+    # Validate selection exists
+    if not cmd.count_atoms(selection):
+        raise ValueError(f"No atoms found in selection: '{selection}'")
+    
+    # Validate thresholds
+    if not (very_high_threshold > high_threshold > low_threshold):
+        raise ValueError("Thresholds must be in descending order: very_high > high > low")
+    
+    # Set up color definitions
+    _setup_plddt_colors(custom_colors)
+    
+    # Get atom indices and B-factors
+    atom_data = []
+    cmd.iterate(selection, 'atom_data.append((index, b))', space={'atom_data': atom_data})
+    
+    if not atom_data:
+        raise ValueError(f"No B-factor data found for selection: '{selection}'")
+    
+    # Apply colors based on B-factor (pLDDT) values
+    for atom_index, b_factor in atom_data:
+        color_name = _get_plddt_color_name(
+            b_factor,
+            very_high_threshold,
+            high_threshold,
+            low_threshold
+        )
+        cmd.color(color_name, f"index {atom_index}")
 
 
 # Extend PyMOL commands
-cmd.extend("pretty_binding_site", pretty_binding_site)
+# cmd.extend("pretty_binding_site", pretty_binding_site)
 # cmd.extend("set_pretty", set_pretty)
-cmd.extend("ball_n_stick", ball_n_stick)
-cmd.extend("ball_n_stick_thick", ball_n_stick_thick)
-cmd.extend("add_vdw", add_vdw)
-cmd.extend("plddt_colors", plddt_colors)
+cmd.extend("stylize_ball_and_stick", stylize_ball_and_stick)
+# cmd.extend("add_vdw", add_vdw)
+cmd.extend("color_by_plddt", color_by_plddt)
