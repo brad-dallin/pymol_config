@@ -201,22 +201,6 @@ def stylize_ball_and_stick(selection: str,
 #     cmd.hide("sticks", "backbone and (not name CA)")
 
 
-# def set_pretty():
-#     # Workspace settings
-#     cmd.bg_color("white")
-#     cmd.set("ray_opaque_background", "off")
-#     cmd.set("orthoscopic", 0)
-#     cmd.set("transparency", 0.5)
-#     cmd.set("dash_gap", 0)
-#     cmd.set("ray_trace_mode", 1)
-#     cmd.set("antialias", 3)
-#     cmd.set("ambient", 0.5)
-#     cmd.set("spec_count", 5)
-#     cmd.set("shininess", 50)
-#     cmd.set("specular", 1)
-#     cmd.set("reflect", 0.1)
-#     cmd.space("cmyk")
-
 def color_by_plddt(
         selection: str,
         very_high_threshold: float = 90.0,
@@ -287,7 +271,6 @@ def color_by_plddt(
 
 # Extend PyMOL commands
 # cmd.extend("pretty_binding_site", pretty_binding_site)
-# cmd.extend("set_pretty", set_pretty)
 # cmd.extend("add_vdw", add_vdw)
 cmd.extend("stylize_ball_and_stick", stylize_ball_and_stick)
 cmd.extend("color_by_plddt", color_by_plddt)
