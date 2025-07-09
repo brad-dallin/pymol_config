@@ -288,6 +288,6 @@ def color_by_plddt(
 # Extend PyMOL commands
 # cmd.extend("pretty_binding_site", pretty_binding_site)
 # cmd.extend("set_pretty", set_pretty)
-cmd.extend("stylize_ball_and_stick", stylize_ball_and_stick)
 # cmd.extend("add_vdw", add_vdw)
+cmd.extend("stylize_ball_and_stick", stylize_ball_and_stick)
 cmd.extend("color_by_plddt", color_by_plddt)
