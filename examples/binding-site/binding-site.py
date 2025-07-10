@@ -11,19 +11,19 @@ from pymol import cmd
 
 ## Functions
 def stylize_binding_site(
-        selection: str,
-        receptor: str = "polymer") -> None:
+        selection1: str,
+        selection2: str = "polymer") -> None:
     """
     """
     cmd.set("surface_carve_cutoff", 4.5)
-    cmd.set("surface_carve_selection", selection)
+    cmd.set("surface_carve_selection", selection1)
     cmd.set("surface_carve_normal_cutoff", -0.1)
 
-    cmd.show("surface", f"{receptor} within 8 of {selection}")
+    cmd.show("surface", f"{selection2} within 8 of {selection1}")
     cmd.set("two_sided_lighting")
     cmd.set("transparency", 0.5)
-    cmd.show("sticks", selection)
-    cmd.orient(selection)
+    cmd.show("sticks", selection1)
+    cmd.orient(selection1)
 
     # cmd.set("surface_color", "white")
     cmd.set("surface_type", 2)

@@ -33,3 +33,10 @@ Vnm_tstart: starting timer 26 (APBS WALL CLOCK)..
 ##############################################################################
 Hello world from PE 0
 Vnm_tstart: starting timer 26 (APBS WALL CLOCK)..
+##############################################################################
+# MC-shell I/O capture file.
+# Creation Date and Time:  Wed Jul  9 21:40:33 2025
+
+##############################################################################
+Hello world from PE 0
+Vnm_tstart: starting timer 26 (APBS WALL CLOCK)..
