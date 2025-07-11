@@ -32,7 +32,7 @@ def stylize_binding_site(
         cmd.unset("ray_shadows")
 
     cmd.show("sticks", selection1)
-    cmd.show("sticks", f"byres {selection2} within 3.5 of {selection1}")
+    cmd.show("sticks", f"byres {selection2} within 4 of {selection1}")
 
 ## Extend PyMOL commands
 cmd.extend("stylize_binding_site", stylize_binding_site)

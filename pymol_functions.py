@@ -164,7 +164,6 @@ def stylize_ball_and_stick(selection: str,
     _apply_element_colors(selection)
     
     # Set stick color and background
-    cmd.set("stick_color", "black")
     if set_background:
         cmd.set("bg_rgb", [1, 1, 1])  # White background
     
