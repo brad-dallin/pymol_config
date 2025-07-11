@@ -163,10 +163,6 @@ def stylize_ball_and_stick(selection: str,
     # Apply element-based coloring scheme
     _apply_element_colors(selection)
     
-    # Set stick color and background
-    if set_background:
-        cmd.set("bg_rgb", [1, 1, 1])  # White background
-    
     # Apply preset at the end (maintaining original function behavior)
     if use_preset:
         preset.ball_and_stick(selection)
