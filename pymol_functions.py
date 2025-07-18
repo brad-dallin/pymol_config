@@ -227,33 +227,6 @@ def stylize_binding_site(
     cmd.show("sticks", selection1)
     cmd.show("sticks", f"byres {selection2} within 4 of {selection1}")
 
-# # Defines VDW Sphere settings
-# def add_vdw(arg1):
-#     vdw_object = f"{arg1}_vdw"
-#     cmd.copy(vdw_object, arg1)
-#     cmd.set("sphere_scale", 1.0, f"{vdw_object} and elem H")
-#     cmd.rebuild()
-#     cmd.set("sphere_scale", 1, vdw_object)
-#     cmd.hide("nonbonded", vdw_object)
-#     cmd.hide("lines", vdw_object)
-#     cmd.hide("sticks", vdw_object)
-#     cmd.set("sphere_transparency", 0.7, vdw_object)
-
-
-# # Defines protein settings for binding site
-# def pretty_binding_site():
-#     """
-#     Example:
-#         PyMOL> pretty_binding_site
-#     """
-#     cmd.show("sticks", "byres all within 3 of sele")
-#     cmd.color("pastel_pink", "elem C and not sele")
-#     cmd.hide("everything", "(hydro and (elem H and not (neighbor elem N+O)))")
-#     cmd.show("sticks", "sele")
-#     cmd.color("pastel_brown", "elem C and sele")
-#     cmd.set("cartoon_color", "grey98")
-#     cmd.hide("sticks", "backbone and (not name CA)")
-
 
 def color_by_plddt(
         selection: str,
@@ -324,8 +297,6 @@ def color_by_plddt(
 
 
 # Extend PyMOL commands
-# cmd.extend("pretty_binding_site", pretty_binding_site)
-# cmd.extend("add_vdw", add_vdw)
 cmd.extend("stylize_ball_and_stick", stylize_ball_and_stick)
 cmd.extend("stylize_binding_site", stylize_binding_site)
 cmd.extend("color_by_plddt", color_by_plddt)
