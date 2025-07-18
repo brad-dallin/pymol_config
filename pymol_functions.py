@@ -215,14 +215,13 @@ def stylize_binding_site(
     # Configure surface if requested
     if int(surface) > 0:
         cmd.set("surface_type", 2)
-        cmd.set("two_sided_lighting")
         cmd.set("surface_carve_cutoff", 4.5)
         cmd.set("surface_carve_normal_cutoff", -0.1)
         cmd.set("surface_carve_selection", selection1)
         cmd.show("surface", f"byres {selection2} within 8 of {selection1}")
         cmd.set("transparency", 0.5, selection2)
         cmd.set("surface_color", "white", selection2)
-        cmd.unset("ray_shadows")
+        cmd.set("two_sided_lighting")
     
     # Show stick representations for binding site
     cmd.show("sticks", selection1)
