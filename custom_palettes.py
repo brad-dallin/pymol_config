@@ -4,45 +4,93 @@
 
 ## IMPORT LIBRARIES
 from __future__ import print_function
-from typing import Optional, NamedTuple
 import math
 import pymol
 from pymol import cmd
+from typing import Optional, NamedTuple
 
 
 ## CLASSES
 class PaletteColor(NamedTuple):
-    """Named tuple for storing color information."""
+    """
+    Named tuple for storing color information.
+    
+    Attributes:
+    -----------
+    name : str
+        Primary name for the color
+    rgb : tuple[int, int, int]
+        RGB color values in 0-255 range
+    alt_names : list[str], optional
+        Alternative names for the color (default: None)
+    short_code : str, optional
+        3-digit string approximating the RGB color for GUI menus (default: None)
+        
+    Note:
+    -----
+    The short_code can be set explicitly in the palette definition. This is helpful
+    for very dark colors, as it ensures that the color code used in the GUI menu
+    provides sufficient contrast against the dark menu background, making the
+    colors more distinguishable.
+    """
     name: str
     rgb: tuple[int, int, int]
-    alt_names: Optional[list[str]] = None 
-    # NOTE: Allow the short_code to be set explicitly in the palette definition. This is helpful
-    # for very dark colors, as it ensures that the color code used in the GUI menu provides
-    # sufficient contrast against the dark menu background, making the colors more distinguishable.
-    short_code: Optional[str] = None # 3-digit string approximating the RGB color
+    alt_names: Optional[list[str]] = None
+    short_code: Optional[str] = None
 
-    def all_names(self):
-        """Return a list of all names for this color."""
+    def all_names(self) -> list[str]:
+        """
+        Return a list of all names for this color.
+        
+        Returns:
+        --------
+        list[str]
+            List containing primary name and any alternative names
+        """
         names = [self.name]
         if self.alt_names:
             names.extend(self.alt_names)
         return names
 
-    def get_short_code(self):
-        """Return a 3-digit string approximating the RGB color."""
+    def get_short_code(self) -> str:
+        """
+        Return a 3-digit string approximating the RGB color.
+        
+        Returns:
+        --------
+        str
+            3-digit string representing RGB values in 0-9 range
+        """
         if self.short_code:
             return self.short_code
         return ''.join(str(math.floor(x / 256 * 10)) for x in self.rgb)
 
 
 class Palette(NamedTuple):
-    """Named tuple for storing palette information."""
+    """
+    Named tuple for storing palette information.
+    
+    Attributes:
+    -----------
+    name : str
+        Name of the color palette
+    colors : list[PaletteColor]
+        List of PaletteColor objects in the palette
+    prefix : str, optional
+        Prefix to add to color names when installing (default: '')
+    """
     name: str
     colors: list[PaletteColor]
     prefix: str = ''
 
-    def install(self):
-        """Install the palette, adding colors and the GUI menu."""
+    def install(self) -> None:
+        """
+        Install the palette, adding colors and the GUI menu.
+        
+        Returns:
+        --------
+        None
+        """
         PALETTES_MAP[self.name] = self
         add_menu(self.name)
 
@@ -272,7 +320,6 @@ PALETTES_MAP = {
     VIRIDIS_PALETTE.name: VIRIDIS_PALETTE,
     MAGMA_PALETTE.name: MAGMA_PALETTE,
 }
-
 
 # Initialize menus when module is loaded by PyMOL
 if __name__ == "pymol":
