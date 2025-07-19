@@ -4,10 +4,10 @@
 
 ## IMPORT LIBRARIES
 from __future__ import print_function
+from typing import Optional, NamedTuple
 import math
 import pymol
 from pymol import cmd
-from typing import Optional, NamedTuple
 
 
 ## CLASSES
