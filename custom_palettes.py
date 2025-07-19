@@ -2,18 +2,15 @@
 # -*- coding: utf-8 -*-
 """Module providing custom color palettes for PyMOL."""
 
-# IMPORT LIBRARIES
+## IMPORT LIBRARIES
 from __future__ import print_function
 import math
-from typing import Optional
-from typing import NamedTuple
-
-# IMPORT PYMOL MODULES
 import pymol
 from pymol import cmd
+from typing import Optional, NamedTuple
 
 
-# PALETTE COLOR CLASS
+## CLASSES
 class PaletteColor(NamedTuple):
     """Named tuple for storing color information."""
     name: str
@@ -37,7 +34,7 @@ class PaletteColor(NamedTuple):
             return self.short_code
         return ''.join(str(math.floor(x / 256 * 10)) for x in self.rgb)
 
-# PALETTE CLASS
+
 class Palette(NamedTuple):
     """Named tuple for storing palette information."""
     name: str
@@ -50,6 +47,7 @@ class Palette(NamedTuple):
         add_menu(self.name)
 
 
+## PRIVATE FUNCTIONS
 def _get_palettes(palette_name: Optional[str] = None):
     """Return the desired Palette(s)."""
     if palette_name is None:
@@ -57,36 +55,6 @@ def _get_palettes(palette_name: Optional[str] = None):
     if palette_name not in PALETTES_MAP:
         raise ValueError(f'Palette "{palette_name}" not found.')
     return [PALETTES_MAP[palette_name]]
-
-
-def set_colors(palette=None, replace=False):
-    """Add the palette colors to PyMOL."""
-    palettes = _get_palettes(palette)
-    for palette in palettes:
-        max_name_length = max(len(c.name) for c in palette.colors)
-        added_colors = []
-        for color in palette.colors:
-            rgb = color.rgb
-
-            # Set the colors
-            for name in color.all_names():
-                if palette.prefix:
-                    use_name = f'{palette.prefix}{name}'
-                else:
-                    use_name = name
-                cmd.set_color(use_name, rgb)
-
-                # Optionally replace built-in colors
-                if replace:
-                    cmd.set_color(name, rgb)
-                    spacer = (max_name_length - len(name) + 4) * ' '
-                    added_colors.append(f'    {name}{spacer}{use_name}')
-                else:
-                    added_colors.append(f'    {use_name}')
-
-        # Notify user of newly available colors
-        print(f'These {palette.name} colors are now available:')
-        print('\n'.join(added_colors))
 
 
 def _add_palette_menu(palette: Palette):
@@ -132,15 +100,96 @@ def _add_palette_menu(palette: Palette):
     print('    done.\n')
 
 
-def add_menu(palette_name=None):
-    """Add the specified color palettes to the PyMOL OpenGL menu."""
+## PUBLIC FUNCTIONS
+def set_colors(palette: Optional[str] = None, replace: bool = False) -> None:
+    """
+    Add the palette colors to PyMOL.
+    
+    Parameters:
+    -----------
+    palette : str, optional
+        Name of the palette to add colors from (default: None, adds all palettes)
+    replace : bool, optional
+        Whether to replace built-in colors (default: False)
+    
+    Returns:
+    --------
+    None
+    
+    Example:
+    --------
+    >>> set_colors("pastel")
+    >>> set_colors("colorblind", replace=True)
+    """
+    palettes = _get_palettes(palette)
+    for palette in palettes:
+        max_name_length = max(len(c.name) for c in palette.colors)
+        added_colors = []
+        for color in palette.colors:
+            rgb = color.rgb
+
+            # Set the colors
+            for name in color.all_names():
+                if palette.prefix:
+                    use_name = f'{palette.prefix}{name}'
+                else:
+                    use_name = name
+                cmd.set_color(use_name, rgb)
+
+                # Optionally replace built-in colors
+                if replace:
+                    cmd.set_color(name, rgb)
+                    spacer = (max_name_length - len(name) + 4) * ' '
+                    added_colors.append(f'    {name}{spacer}{use_name}')
+                else:
+                    added_colors.append(f'    {use_name}')
+
+        # Notify user of newly available colors
+        print(f'These {palette.name} colors are now available:')
+        print('\n'.join(added_colors))
+
+
+def add_menu(palette_name: Optional[str] = None) -> None:
+    """
+    Add the specified color palettes to the PyMOL OpenGL menu.
+    
+    Parameters:
+    -----------
+    palette_name : str, optional
+        Name of the palette to add menu for (default: None, adds all palettes)
+    
+    Returns:
+    --------
+    None
+    
+    Example:
+    --------
+    >>> add_menu("pastel")
+    >>> add_menu()  # Adds all palette menus
+    """
     palettes = _get_palettes(palette_name)
     for palette in palettes:
         _add_palette_menu(palette)
 
 
-def remove_menu(palette_name=None):
-    """Remove the color palette menu(s)."""
+def remove_menu(palette_name: Optional[str] = None) -> None:
+    """
+    Remove the color palette menu(s).
+    
+    Parameters:
+    -----------
+    palette_name : str, optional
+        Name of the palette menu to remove (default: None, removes all palette menus)
+    
+    Returns:
+    --------
+    None
+    
+    Example:
+    --------
+    >>> remove_menu("pastel")
+    >>> remove_menu()  # Removes all palette menus
+    """
     palettes = _get_palettes(palette_name)
     all_colors_list = pymol.pymol.menu.all_colors_list
     for palette in palettes:
@@ -155,7 +204,7 @@ def remove_menu(palette_name=None):
             print(f'Deleted menu for {palette.name} palette.')
 
 
-## COLOR PALETTES
+## COLOR PALETTE DEFINITIONS
 PASTEL_COLORS = [
     PaletteColor('pastel_red',       (243, 177, 175)),
     PaletteColor('pastel_orange',    (248, 216, 171)),
@@ -166,6 +215,7 @@ PASTEL_COLORS = [
     PaletteColor('pastel_purple',    (187, 178, 250)),
     PaletteColor('pastel_pink',      (246, 200, 251)),
 ]
+
 CB_COLORS = [
     PaletteColor('cb_darkorange', (198, 101,  38)),
     PaletteColor('cb_orange',     (220, 162,  55)),
@@ -182,6 +232,7 @@ CB_COLORS = [
     PaletteColor('cb_pink',       (191, 108, 120)),
     PaletteColor('cb_lightpink',  (193, 125, 165)),
 ]
+
 VIRIDIS_COLORS = [
     PaletteColor('viridis1',  (253, 231,  36)),
     PaletteColor('viridis2',  (186, 222,  39)),
@@ -195,6 +246,7 @@ VIRIDIS_COLORS = [
     PaletteColor('viridis10', ( 72,  35, 116)),
     PaletteColor('viridis11', ( 68,   1,  84)),
 ]
+
 MAGMA_COLORS = [
     PaletteColor('magma1',  (251, 252, 191)),
     PaletteColor('magma2',  (253, 205, 114)),
@@ -208,6 +260,7 @@ MAGMA_COLORS = [
     PaletteColor('magma10', ( 20,  13,  53)),
     PaletteColor('magma11', (  0,   0,   3)),
 ]
+
 PASTEL_PALETTE = Palette('pastel', PASTEL_COLORS)
 CB_PALETTE = Palette('colorblind', CB_COLORS)
 VIRIDIS_PALETTE = Palette('viridis', VIRIDIS_COLORS)
@@ -220,5 +273,13 @@ PALETTES_MAP = {
     MAGMA_PALETTE.name: MAGMA_PALETTE,
 }
 
+
+# Initialize menus when module is loaded by PyMOL
 if __name__ == "pymol":
     add_menu()
+
+
+# Extend PyMOL commands
+cmd.extend("set_colors", set_colors)
+cmd.extend("add_menu", add_menu)
+cmd.extend("remove_menu", remove_menu)
