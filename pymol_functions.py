@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Module providing custom styles for PyMOL."""
+"""Module providing helper functions for PyMOL."""
 
 ## IMPORT LIBRARIES
 from pymol import cmd
