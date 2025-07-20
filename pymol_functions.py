@@ -4,7 +4,6 @@
 
 ## IMPORT LIBRARIES
 from pymol import cmd
-from pymol import util
 from pymol import preset
 from typing import Optional
 
